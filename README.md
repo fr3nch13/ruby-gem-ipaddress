@@ -121,7 +121,8 @@ the default prefix will be `/32`, or `255.255.255.255`. For example:
 # let's declare an host address
 host = IPAddress::IPv4.new "10.1.1.1"
 
-puts host.to_s #=> "10.1.1.1/32"
+puts host.to_s #=> "10.1.1.1"
+puts host.to_string #=> "10.1.1.1/32"
 ```
 
 The new created object has prefix `/32`, which is the same  as we created the
@@ -136,7 +137,9 @@ You can also pass a `uint32` to obtain an `IPAddress::IPv4` object:
 ```ruby
 # Create host object
 ip = IPAddress 167837953
-puts ip.to_s #=> "10.1.1.1/32"
+
+puts ip.to_s #=> "10.1.1.1"
+puts ip.to_string #=> "10.1.1.1/32"
 ```
 
 ### Handling the IPv4 address
@@ -146,6 +149,8 @@ Once created, you can obtain the attributes for an IPv4 object:
 ```ruby
 ip = IPAddress("172.16.10.1/24")
 
+ip.to_s #=> "172.16.10.1"
+ip.to_string #=> "172.16.10.1/24"
 ip.address #=> "172.16.10.1"
 ip.prefix #=> 24
 ```
@@ -170,11 +175,18 @@ The shortcut method `IPv4#[]`, provides access to a given octet whithin the rang
 ip[1] #=> 16
 ```
 
-If you need to print out the IPv4 address in a canonical form, you can use
+If you need to print out just the IPv4 address, you can use
 `IPv4#to_s`:
 
 ```ruby
-ip.to_s #=> "172.16.10.1/24"
+ip.to_s #=> "172.16.10.1"
+```
+
+If you need to print out the IPv4 address in a canonical form, you can use
+`IPv4#to_string`:
+
+```ruby
+ip.to_string #=> "172.16.10.1/24"
 ```
 
 ### Changing netmask
@@ -185,7 +197,7 @@ example:
 ```ruby
 ip.prefix = 25
 
-ip.to_s #=> "172.16.10.1/25"
+ip.to_string #=> "172.16.10.1/25"
 ```
 
 If you need to use a netmask in IPv4 format, you can achive so by using the
@@ -194,7 +206,7 @@ If you need to use a netmask in IPv4 format, you can achive so by using the
 ```ruby
 ip.netmask = "255.255.255.252"
 
-ip.to_s #=> "172.16.10.1/30"
+ip.to_string #=> "172.16.10.1/30"
 ```
 
 ### Working with networks, broadcasts and addresses
@@ -225,7 +237,7 @@ With IPAddress it's easy to calculate the network for an IP address:
 ip = IPAddress "172.16.10.1/24"
 
 net = ip.network #=> #<IPAddress::IPv4:0xb7a5ab24 @octets=[172, 16, 10, 0], @prefix=24, @address="172.16.10.0">
-net.to_s #=> "172.16.10.0/24"
+net.to_string #=> "172.16.10.0/24"
 ```
 
 Method IPv4#network creates a new IPv4 object from the network number,
@@ -258,7 +270,7 @@ creates a new IPv4 object to handle the broadcast address:
 ip = IPAddress "172.16.10.1/24"
 
 bcast = ip.broadcast #=> #<IPAddress::IPv4:0xb7a406fc @octets=[172, 16, 10, 255], @prefix=24, @address="172.16.10.255">
-bcast.to_s #=> "172.16.10.255/24"
+bcast.to_string #=> "172.16.10.255/24"
 ```
 
 #### Addresses, ranges and iterators
@@ -296,8 +308,10 @@ respectively the first and the last host address in the range
 ```ruby
 ip = IPAddress "172.16.10.100/24"
 
-ip.first.to_s #=> "172.16.10.1/24"
-ip.last.to_s #=> "172.16.10.254/24"
+ip.first.to_s #=> "172.16.10.1"
+ip.last.to_s #=> "172.16.10.254"
+ip.first.to_string #=> "172.16.10.1/24"
+ip.last.to_string #=> "172.16.10.254/24"
 ```
 
 Checking if an address is loopback is easy with the `IPv4#loopback?` method:
@@ -456,7 +470,7 @@ network = IPAddress "172.16.10.0/24"
 
 subnets = network.subnet(26)
 
-subnets.map { |i| i.to_s } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", "172.16.10.192/26"]
+subnets.map { |i| i.to_string } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", "172.16.10.192/26"]
 ```
 
 As you can see, an Array has been created, containing 4 new IPv4 objects
@@ -472,7 +486,7 @@ network = IPAddress("172.16.10.0/24")
 
 subnets = network.split(4)
 
-subnets.map { |i| i.to_s } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", "172.16.10.192/26"]
+subnets.map { |i| i.to_string } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", "172.16.10.192/26"]
 ```
 
 Hey, that's the same result as before! This actually makes sense, as the two
@@ -498,7 +512,7 @@ How do we split this network into 3 subnets? Easy:
 ```ruby
 subnets = network.split(3)
 
-subnets.map { |i| i.to_s } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/25"]
+subnets.map { |i| i.to_string } #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/25"]
 ```
 
 As you can see, IPAddress tried to perform a good allocation by filling up all
@@ -582,7 +596,7 @@ ip2 = IPAddress("10.0.1.1/24")
 ip3 = IPAddress("10.0.2.1/24")
 ip4 = IPAddress("10.0.3.1/24")
 
-IPAddress::IPv4::summarize(ip1, ip2, ip3, ip4).map { |i| i.to_s } #=> ["10.0.0.0/22"]
+IPAddress::IPv4::summarize(ip1, ip2, ip3, ip4).map { |i| i.to_string } #=> ["10.0.0.0/22"]
 ```
 
 But the following networks can't be summarized in a single network:
@@ -593,7 +607,7 @@ ip2 = IPAddress("10.0.2.1/24")
 ip3 = IPAddress("10.0.3.1/24")
 ip4 = IPAddress("10.0.4.1/24")
 
-IPAddress::IPv4::summarize(ip1, ip2, ip3, ip4).map { |i| i.to_s } #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
+IPAddress::IPv4::summarize(ip1, ip2, ip3, ip4).map { |i| i.to_string } #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
 ```
 
 In this case, the two summarizables networks have been aggregated into a
@@ -616,14 +630,14 @@ ip = IPAddress("172.16.10.0/24")
 you can supernet it with a new /23 prefix
 
 ```ruby
-ip.supernet(23).to_s #=> "172.16.10.0/23"
+ip.supernet(23).to_string #=> "172.16.10.0/23"
 ```
 
 However if you supernet it with a `/22` prefix, the network address will
 change:
 
 ```ruby
-ip.supernet(22).to_s #=> "172.16.8.0/22"
+ip.supernet(22).to_string #=> "172.16.8.0/22"
 ```
 
 This is because `172.16.10.0/22` is not a network anymore, but an host
@@ -768,7 +782,7 @@ To print out an IPv6 address in human readable form, use the `IPv6#to_string`,
 ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
 
 ip6.to_string #=> "2001:db8::8:800:200c:417a/96"
-ip6.to_s #=> "2001:db8::8:800:200c:417a/96"
+ip6.to_s #=> "2001:db8::8:800:200c:417a"
 
 ip6.to_string_uncompressed #=> "2001:0db8:0000:0000:0008:0800:200c:417a/96"
 ```
@@ -819,7 +833,8 @@ data = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
 ip6 = IPAddress::IPv6::parse_data data
 ip6.prefix = 64
 
-ip6.to_s #=> "2001:db8::8:800:200c:417a/64"
+ip6.to_string #=> "2001:db8::8:800:200c:417a/64"
+ip6.to_s #=> "2001:db8::8:800:200c:417a"
 ```
 
 A new IPv6 address can also be created from an unsigned 128 bits integer:
@@ -830,7 +845,8 @@ u128 = 42540766411282592856906245548098208122
 ip6 = IPAddress::IPv6::parse_u128 u128
 ip6.prefix = 64
 
-ip6.to_s #=>"2001:db8::8:800:200c:417a/64"
+ip6.to_string #=>"2001:db8::8:800:200c:417a/64"
+ip6.to_s #=>"2001:db8::8:800:200c:417a"
 ```
 
 Finally, a new IPv6 address can be created from an hex string:
@@ -841,7 +857,8 @@ hex = "20010db80000000000080800200c417a"
 ip6 = IPAddress::IPv6::parse_hex hex
 ip6.prefix = 64
 
-ip6.to_s #=> "2001:db8::8:800:200c:417a/64"
+ip6.to_string #=> "2001:db8::8:800:200c:417a/64"
+ip6.to_s #=> "2001:db8::8:800:200c:417a"
 ```
 
 ### Special IPv6 addresses
@@ -876,7 +893,7 @@ With IPAddress, create a new unspecified IPv6 address using its own subclass:
 ```ruby
 ip = IPAddress::IPv6::Unspecified.new
 
-ip.to_s #=> "::/128"
+ip.to_string #=> "::/128"
 ```
 
 You can easily check if an IPv6 object is an unspecified address by using the
@@ -924,7 +941,7 @@ calling their own class:
 ```ruby
 ip = IPAddress::IPv6::Loopback.new
 
-ip.to_s #=> "::1/128"
+ip.to_string #=> "::1/128"
 ```
 
 or by using the wrapper:
@@ -932,7 +949,7 @@ or by using the wrapper:
 ```ruby
 ip = IPAddress "::1"
 
-ip.to_s #=> "::1/128"
+ip.to_string #=> "::1/128"
 ```
 
 Checking if an address is loopback is easy with the `IPv6#loopback?` method:
@@ -980,7 +997,7 @@ Let's check it's really a mapped address:
 ```ruby
 ip6.mapped? #=> true
 
-ip6.to_s #=> "::ffff:172.16.10.1/128"
+ip6.to_string #=> "::ffff:172.16.10.1/128"
 ```
 
 Now with the `#ipv4` attribute, we can easily access the IPv4 portion of the
@@ -1010,7 +1027,7 @@ That is, two colons and the IPv4 address. However, as by RFC, the `ffff` group
 will be automatically added at the beginning
 
 ```ruby
-ip6.to_s #=> "::ffff:172.16.10.1/128"
+ip6.to_string #=> "::ffff:172.16.10.1/128"
 ```
 
 making it a mapped IPv6 compatible address.
